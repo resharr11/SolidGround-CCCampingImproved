@@ -1,0 +1,8 @@
+{
+  "name": "solidgroundcamping",
+  "version-string": "1.0.0",
+  "dependencies": [
+    "commonlib-shared",
+    { "name": "spdlog", "default-features": false, "features": [ "wchar" ] }
+  ]
+}

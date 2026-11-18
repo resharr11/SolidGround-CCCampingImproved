@@ -1,0 +1,299 @@
+# Solid Ground Kit Guide
+
+A kit is a small text file in your mod that changes how Solid Ground's camps look and what they hold. You need no plugin and no scripts for most of it, and nothing changes for players who don't have your mod.
+
+With a kit you can:
+
+- reshape the earth mound every camp stands on (with your own models),
+- add, remove and count the spots round the fire where followers warm their hands or sit,
+- add tents to the shelter menu,
+- add furniture, crafting stations and other objects to every camp.
+
+You can also replace the camp's own objects with your own models without any kit file (see Replacing camp objects).
+
+Things a kit can't do: put pieces in dungeon camps (those keep their own small set), or change how the mound looks while the game runs. Players change sizes and distances themselves on the in-game settings page (with SKSE Menu Framework installed, press F1 to open the Mod Control Panel, then Camping - Solid Ground > Camp).
+
+## What you need
+
+- A text editor (Notepad is enough).
+- For anything that names a game object (`Form`, `Add`): its plugin and form ID (see Writing a game object for what these are and how to find them).
+- For new models: Outfit Studio, NifSkope or Blender.
+- Solid Ground installed, to test.
+
+## Your first kit, step by step
+
+If you have never made a mod, start here. This kit puts a tanning rack at every outdoor camp. It takes about ten minutes, and the rest of this guide builds on it.
+
+1. On your desktop, make a new folder named `My Camp Kit`. Inside it, make these folders, one inside the other, spelled exactly like this:
+
+   ```text
+   My Camp Kit
+     SKSE
+       Plugins
+         SolidGroundCamping
+           Kits
+             MyCampKit
+   ```
+
+2. Open Notepad and paste these lines:
+
+   ```ini
+   ; My first Solid Ground kit: a tanning rack at every outdoor camp
+   [Piece]
+   Name   = Tanning rack
+   Form   = Skyrim.esm|0x0727A1
+   Along  = 250
+   Across = -200
+   Turn   = 90
+   ```
+
+   `Skyrim.esm|0x0727A1` is the game's own tanning rack (see Writing a game object). `Along = 250` puts it about 3.6 m out from the fire, and `Across = -200` about 2.9 m to the side.
+
+3. Choose File > Save as. Go into the `MyCampKit` folder, set "Save as type" to "All files", type the name `MyCampKit.ini` and click Save. If you skip "All files", Windows saves it as `MyCampKit.ini.txt` and Solid Ground won't read it.
+
+4. Pack it for your mod manager: open the `My Camp Kit` folder, right-click the `SKSE` folder inside it and choose "Compress to ZIP file" (on Windows 10: Send to > Compressed (zipped) folder). The zip must have `SKSE` at its top, not `My Camp Kit`, or the files end up in the wrong place.
+
+5. Install the zip in your mod manager (Mod Organizer 2 or Vortex) like any other mod, and turn it on. Solid Ground must be on too.
+
+6. Start the game, load a save and make camp outdoors with Camping Supplies. The tanning rack stands to the side of the fire, on its own patch of mound.
+
+7. Didn't work? Open Solid Ground's log, `Documents\My Games\Skyrim Special Edition\SKSE\SolidGroundCamping.log`, in Notepad. Near the top it lists every kit file it read and what it found in it. If `MyCampKit.ini` isn't there, see Common traps.
+
+To change the kit later: edit the file, make the zip again, install it again over the old one, and restart the game. In Mod Organizer 2 you can instead right-click the mod, choose "Open in Explorer" and edit the installed file there. Solid Ground reads kit files only when the game starts.
+
+## Where kit files go
+
+Kit files are plain text files ending in `.ini`, in this folder of your mod:
+
+```text
+SKSE
+  Plugins
+    SolidGroundCamping
+      Kits
+        MyMod
+          MyMod.ini
+```
+
+1. Inside your mod's folder, make the folders `SKSE`, `Plugins`, `SolidGroundCamping`, `Kits`, and inside that a folder named after your mod. Use these exact names for the first four.
+2. Write the file in any text editor, such as Notepad. Save it with a name ending in `.ini`. In Notepad, set "Save as type" to "All files", or Windows saves it as `MyMod.ini.txt` and Solid Ground won't read it.
+3. Lines starting with `;` are comments.
+
+Solid Ground reads every kit file once, when the game starts, in A to Z order of their paths. If two files set the same value, the one that comes later in that order wins. After editing a file, restart the game.
+
+Players without your mod never get the file, so nothing changes for them.
+
+### Writing a game object
+
+Every object in Skyrim (a chair, a tanning rack, a tent) is a record in a plugin: a file such as `Skyrim.esm` or `MyMod.esp`. Each record has a number inside its plugin, its form ID. A kit names an object by its plugin and its form ID together.
+
+The easiest way to find them is the game's console:
+
+1. In game, open the console with the key under Esc, left of 1 (`~` on US keyboards).
+2. Type `help`, a space, part of the object's name, a space and `4`, then press Enter. For example: `help tanning 4`.
+3. The list shows each match with its type, its form ID and its name, for example a line for the Tanning Rack with `000727A1`. Pick the one whose type is FURN (furniture), STAT (static), MSTT (movable static) or ACTI (activator).
+4. The plugin is the one the object comes from: for anything in the base game it is `Skyrim.esm`. For an object from a mod, look it up in xEdit (SSEEdit), which shows each record under its plugin.
+
+Don't click an object in the world to get its ID: that gives the ID of that one placed copy, not of the object itself. Solid Ground leaves such a piece out, and the log says it "is not furniture, a static or an activator".
+
+Wherever a kit names a game object, write it one of two ways:
+
+- `Plugin|FormID`, as in SkyPatcher: `Skyrim.esm|0x0727A1`
+- `FormID~Plugin`, as in SPID: `0x0727A1~Skyrim.esm`
+
+Write the form ID as it is inside its own plugin, without the load-order number at the front: `0x000801`, not `0x05000801`. If you copy an ID from the console with that number, Solid Ground drops it for you and says so in the log. This works for light plugins (ESL) too.
+
+## Reshaping the mound
+
+On a slope, every camp stands on an earth mound: a flat top, a rounded edge, and sides that slope down until they meet the hill. You can replace the mound's models with your own shape, for example steeper sides for a mod set in the mountains.
+
+**Warning: a reshaped mound may look worse.** Our mound was adjusted over many rounds of testing so that its sides show no creases or streaks, its edge doesn't look like a wall, and it doesn't take more ground than needed. A new shape hasn't had that testing. Check it on gentle and steep hills, in daylight and at night, before you release it.
+
+### Step 1: reshape the models
+
+The mound models are in `meshes/SolidGroundCamping/`: `CampFoundation.nif`, `CampFoundation11.nif` to `CampFoundation40.nif`, and the same 31 again with a `T` (`CampFoundationT.nif` and so on). That makes 62 files. The number is the length of the flat top: 10 means 256 x 256 units, 40 means 256 x 1024 units. The `T` files are the same shapes with the texture turned a quarter.
+
+1. Edit them in Outfit Studio or Blender. Ship all 62 files in your mod at the same paths, so they replace ours.
+2. Keep the flat top exactly where it is: at the model's origin, with the same width and length. The camp's pieces stand on it.
+3. Change the sides and the collision together. The collision is what people walk on. If you change only the visible shape, people sink into the mound or float beside it.
+
+### Step 2: tell Solid Ground the new shape
+
+The plugin works out where the mound's sides meet the hill: how deep the mound sits, which ground it covers (camps that would cover a road or water are refused), and where the soft ground splashes go at its foot. For that it needs the shape's numbers. Add a `[Mound]` section to your kit file:
+
+```ini
+[Mound]
+UpperSlope   = 30     ; degrees: the side just under the rounded edge
+LowerSlope   = 45     ; degrees: the side further down
+TurnDepth    = 105    ; how far below the top the upper slope ends
+TurnSoftness = 40     ; how far out the change from one slope to the other takes (0: a sharp bend)
+Shoulder     = 64     ; how wide the rounded top edge is
+Bulge        = 60     ; how far the uneven outline swells out at most
+Depth        = 1536   ; how far below the top the sides go
+```
+
+The values above are our mound's. Leave out any line you didn't change. Distances are in game units, the same as in the Creation Kit and xEdit (1 unit is about 1.43 cm).
+
+| Key | Allowed | Meaning |
+| --- | --- | --- |
+| `UpperSlope` | 10 to 60 | Angle of the side just under the rounded edge, in degrees. |
+| `LowerSlope` | 10 to 70 | Angle further down. If it is gentler than `UpperSlope`, Solid Ground uses `UpperSlope`. |
+| `TurnDepth` | 20 to 600 | Where the upper slope ends, measured down from the top. |
+| `TurnSoftness` | 0 to 200 | How far out the bend between the two slopes runs. |
+| `Shoulder` | 16 to 200 | Width of the rounded edge of the top. |
+| `Bulge` | 0 to 150 | How far the outline swells out at most. Solid Ground expects our pattern of swells (slow, irregular, never inwards) and only lets you change their size: keep the pattern when you edit the outline, or set 0 for a plain outline. |
+| `Depth` | 256 to 4096 | How far below the top the sides reach. Deeper sides keep the mound from showing its bottom on a steep hill. |
+
+A value outside its range is moved to the nearest allowed value. Solid Ground's log (`Documents/My Games/Skyrim Special Edition/SKSE/SolidGroundCamping.log`) lists every kit file it read, every value it changed and why, and the shape it uses in the end.
+
+### What goes wrong if the numbers don't match the models
+
+| What you see | Likely cause |
+| --- | --- |
+| The mound floats above the hill on one side, or a gap shows at its foot | The sides in the models are steeper than `UpperSlope`/`LowerSlope`, or `Depth` is less than the models' depth. |
+| The hill pokes through the mound's sides | The sides in the models are gentler than the numbers say. |
+| Camps are refused near roads or water where the mound wouldn't reach them, or a mound covers part of a road | The slopes or `Bulge` don't match the models. |
+| Ground splashes float or sink at the mound's foot | The slopes don't match the models. |
+
+## Spots round the fire
+
+Round every outdoor camp's fire, Solid Ground places spots where followers (and mods that let the player use idle markers) warm their hands or sit: crouching, sitting cross-legged and standing, in turn, up to 6 of them. Camping's own two spots by the fire are always kept. With a `[FireSpots]` section you can add your own kinds of spot, remove ours, and change how many there are.
+
+```ini
+[FireSpots]
+Add    = Skyrim.esm|0x0C4EFD, MyMod.esp|0x000801   ; more kinds of spot, placed in turn with ours
+Remove = WarmHandsStand                            ; ours to leave out: WarmHandsCrouch, WarmHandsStand, SitCrossLegged, or All
+Count  = 8                                         ; how many spots round the fire (0 to 12)
+```
+
+1. `Add` takes idle markers or furniture (see Writing a game object). Separate several with commas.
+2. Each spot is placed a little over 1 m from the fire, facing it, on the camp's level ground, never on a camp piece or on another spot. Keep added furniture small (a stool, a log seat): something bigger may stand into the tent or the fire.
+3. `Remove = All` with no `Add` leaves only Camping's own two spots.
+
+When several kit files have a `[FireSpots]` section, every `Add` and `Remove` counts, and the `Count` of the file that comes last (A to Z) is used. A player who sets `firespots` in SolidGroundCamping.ini keeps that number over any kit's `Count`.
+
+Things to know:
+- Spots only go round outdoor camps. Camps in dungeons keep their own small set.
+- Your spots are packed up with the camp. Solid Ground keeps a list of every spot it placed in the save, so it removes them even if a player uninstalls your mod while a camp is still standing.
+
+## More tents
+
+Players pick their shelter in the camp's shelter menu (Change tent): our lean-to, hide tent, fur tent and leather tent. Each `[Tent]` section in a kit file adds one more. Every shelter is sized to fill the same spot in the camp, so the mound, the bedroll and the rest of the camp stay where they are whichever tent is up.
+
+```ini
+[Tent]
+Name   = Hunter's tent                    ; the name in the menu and in messages
+Model  = MyMod\Tents\HuntersTent.nif      ; the model, from inside the Meshes folder
+Width  = 280                              ; how wide the model is (side to side, game units)
+Depth  = 220                              ; how deep it is (front to back, game units)
+Door   = front                            ; which way its opening points: front, left, right, back, or degrees
+Winter = no                               ; yes: warm enough for places where blizzards blow
+Size   = 1                                ; 0.5 to 2: a bigger or smaller fit in the spot
+```
+
+1. `Name` is required, at most 256 letters. Two shelters can't share a name, and names that differ only in spaces, punctuation or capitals count as the same: the second one is left out (with a line in the log).
+2. Give the model either with `Model`, `Width` and `Depth` (no plugin needed), or with `Form = MyMod.esp|0x000801`, a static record whose model is the tent. With `Form`, the size comes from the record, so `Model`, `Width` and `Depth` aren't needed.
+3. Measure `Width` and `Depth` in NifSkope or the Creation Kit, with the model's origin in its middle. Each can be 20 to 2000 units; a value outside is moved to the nearest allowed value. If the origin isn't in the middle, use `Form` instead: the record's bounds include the offset.
+4. `Door` says where the opening is, seen from the model's own front. Solid Ground turns the tent so its opening faces the fire.
+5. `Winter = yes` lets players keep your tent where blizzards blow. Every other shelter is swapped for our fur tent there, as with our own tents. A winter tent gets a fur rug under the bedroll, the others a straw mat.
+
+To add several tents, write one `[Tent]` section for each.
+
+Things to know:
+- With more than 6 shelters, the menu shows them in pages, with a "More shelters" button.
+- A player's chosen tent is kept in the save by its name. If a player removes your mod, their camps use our fur tent instead of a winter tent, and our hide tent instead of any other.
+- A tent name is shown through Solid Ground's translation file. To translate it, a translator adds a line for it (see Translating).
+
+## Replacing camp objects
+
+You don't need a kit file to give the camp new looks. Put your model in your mod at the same path as ours, and it replaces ours in every camp (a mesh replacer). These models are used only by camps:
+
+| Camp object | Path (inside `Meshes`) |
+| --- | --- |
+| Chopping block | `SolidGroundCamping\CampChoppingBlock.nif` |
+| Straw mat (in the light tents) | `SolidGroundCamping\CampStrawMat.nif` |
+| Fire pit before it is lit (stone ring and ash) | `SolidGroundCamping\CampColdFire.nif` |
+| Earth mound | `SolidGroundCamping\CampFoundation*.nif` (see Reshaping the mound) |
+| Pot stand | `SolidGroundCamping\CampPotStand.nif` |
+| Fur rug (in winter tents) | `SolidGroundCamping\CampFurRug.nif` |
+| Bedroll (inside every tent) | `SolidGroundCamping\CampBedroll.nif` |
+
+1. Make the folders `Meshes\SolidGroundCamping` in your mod and put your `.nif` there with exactly the name in the table.
+2. The last three don't ship as files: by default the camp shows the base-game model (the cooking stand, the floor pelt, the fur bedroll). If your mod has a file at one of those paths, Solid Ground uses it instead, for camps only. The rest of Skyrim keeps the base-game look.
+3. Keep the new model about the same size as ours and with its origin at the same place (the bottom middle), or it may stand into the tent or float.
+4. Restart the game after adding or removing a model: Solid Ground looks for these files once at start. Its log says which ones it found.
+
+Two mods replacing the same object: the one lower in the mod manager's list wins, as with any mesh replacer.
+
+## Furniture and crafting stations
+
+Each `[Piece]` section adds one object to every camp made outdoors: a seat, a tanning rack, a workbench, a cooking spit, anything that is furniture, a static (movable statics too) or an activator. Containers (chests, barrels you can open) are not supported: a piece is taken away at pack-up, and what it held would go with it.
+
+```ini
+[Piece]
+Name   = Tanning rack               ; for the log only; players don't see it
+Form   = Skyrim.esm|0x0727A1        ; the object, as Plugin|FormID
+Along  = 250                        ; game units out from the fire, away from the tent (minus: toward the tent)
+Across = -200                       ; game units to the side (minus: the other side)
+Turn   = 90                         ; degrees, from the way the fire faces
+Mound  = yes                        ; yes: it stands on a mound of its own, joined to the camp's; no: on the ground as it is
+```
+
+1. `Name` and `Form` are required. `Along`, `Across` and `Turn` are 0 when left out, and `Mound` is yes.
+2. `Form` is written as in Writing a game object.
+3. Distances are in game units, as in the Creation Kit (1 unit is about 1.43 cm). `Along` and `Across` can be -7000 to 7000 (about 100 m). The camp's own pieces for comparison: the cooking pot stands at `Along = 160`, the chopping block at `Along = -80, Across = 170`, and the tent's middle at about `Along = -170, Across = -100`.
+4. Write one `[Piece]` section for each object. Several kit files can each add pieces.
+
+How a piece is placed:
+- It goes exactly where you put it. If something of the camp already stands there (the fire, the tent, the pot, the chopping block, or another kit piece), it moves straight out from the fire until it stands clear, and the camp grows that way. How far out it ends up is up to you, within the 7000-unit limit on `Along` and `Across`.
+- With `Mound = yes`, it stands on its own mound, level with the camp's and joined to it, as the chopping block does. A piece far from the fire gets a long strip of mound reaching back to the camp.
+- With `Mound = no`, it stands on the hillside as it is. Use this for things that should follow the slope, or when you turn the mound off.
+- A piece that would stand on a road, in water, on ice, on a farm's crops or on something built (a fence, a wall) is left out of that camp, and the log says why. The camp itself is still made.
+- Pieces go only round outdoor camps. Camps in dungeons keep their own small set.
+
+Things to know:
+- Every piece is packed up with the camp. Solid Ground keeps a list of the pieces in the save, so they are removed even if a player uninstalls your mod while a camp is still standing.
+- Furniture needs its furniture markers (the spots people sit or work at) in its model, or nobody can use it.
+- Check where your piece ends up on gentle and steep hills, and with each tent: the tents differ in size.
+- Solid Ground's log (`Documents/My Games/Skyrim Special Edition/SKSE/SolidGroundCamping.log`) lists each piece read from your file and, for each camp, where each piece went or why it was left out.
+
+## Testing your kit
+
+1. Install your mod in your mod manager and turn it on, with Solid Ground.
+2. Start the game and load a save or start a new one. Solid Ground reads kit files when the game starts, so restart the game after every change to the file.
+3. Open Solid Ground's log: `Documents/My Games/Skyrim Special Edition/SKSE/SolidGroundCamping.log`. Near the top, each kit file is listed with what was read from it: every tent, piece and fire spot, and every value that was changed or left out, with the reason.
+4. Make a camp outdoors with Camping Supplies, on a gentle slope first and then on a steeper one. Each camp adds lines to the log: where each piece went, or why it was left out.
+5. For a tent: use the shelter, choose Change tent and pick yours. It also shows on the settings page (F1 > Mod Control Panel > Camping - Solid Ground > Camp, section Tents), marked "(from a kit)".
+6. Pack the camp up (Break Camp) and check that everything of yours went with it.
+
+If your file isn't listed in the log at all, it isn't being read. See Common traps.
+
+## Translating
+
+The only kit text players see is a tent's name, in the shelter menu and on the settings page. Piece names are only for the log.
+
+Solid Ground shows tent names through its translation file, `Interface/Translations/SolidGroundCamping_<LANGUAGE>.txt` (for example `SolidGroundCamping_GERMAN.txt`). To translate your tent's name:
+
+1. Copy Solid Ground's English file, `SolidGroundCamping_ENGLISH.txt`, and name the copy for the language.
+2. Add one line for your tent: `$SGC_` and the name exactly as in your kit, a Tab, then the translation. For example: `$SGC_Hunter's tent` (Tab) `Jägerzelt`.
+3. Save it as "UTF-16 LE" (in Notepad: Save as, Encoding "UTF-16 LE"). A file saved in another encoding is not read.
+
+To see a language without changing the game's, add `language = GERMAN` to `Data/SKSE/Plugins/SolidGroundCamping.ini` and restart the game.
+
+## Common traps
+
+- **The file ends in `.ini.txt`.** Windows hides known file endings, so `MyMod.ini` can really be `MyMod.ini.txt`. The log says so ("ends in .txt and is not read"). Turn on "File name extensions" in File Explorer's View menu, and rename the file.
+- **The folders are spelled differently.** `SKSE\Plugins\SolidGroundCamping\Kits` must be spelled exactly so. The folder below `Kits` can have any name.
+- **The section name is wrong.** Section names go in square brackets on their own line: `[Tent]`, `[Piece]`, `[FireSpots]`, `[Mound]`. A section Solid Ground doesn't know is skipped, with a line in the log.
+- **The form doesn't exist, or its plugin isn't loaded.** The tent or piece is left out, with a line in the log naming the plugin and form ID it looked for. Check both in xEdit.
+- **Two kits set the same thing.** Kit files are read A to Z by their path, and the later one wins for single values (`Count`, the `[Mound]` numbers). Tents with the same name: the second is left out. Pieces and fire spots from every file are all used.
+- **A piece is missing in some camps.** It would have stood on a road, in water, on ice, on crops or on something built. The log says which. The camp is still made.
+- **A piece stands far from the camp.** Something of the camp stood where you put it, so it moved out from the fire until it was clear. Give it more room with `Along` and `Across`.
+- **Furniture nobody can use.** The model needs its furniture markers.
+
+## Releasing your kit
+
+1. List Solid Ground as a requirement on your mod page.
+2. Ship the kit file in your mod at `SKSE\Plugins\SolidGroundCamping\Kits\<YourMod>\<YourMod>.ini`, and your models and plugin if the kit uses them.
+3. Players can install and remove your mod at any time. Camps standing when your mod is removed keep working: your pieces are packed up with the camp, and a camp with your tent switches to one of ours.
+4. Players can still change your tent's size and opening on the settings page. Their choice is kept by your tent's name, so keep the name the same between versions.
+
